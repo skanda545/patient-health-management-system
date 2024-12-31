@@ -1,52 +1,76 @@
-# Prerequisites
-*.d
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+#define MAX_PATIENTS 100
+#define FILENAME "patients.txt"
 
-# Linker output
-*.ilk
-*.map
-*.exp
+struct Patient {
+    int id;
+    char name[100];
+    int age;
+    char disease[100];
+    char doctor[100];
+};
 
-# Precompiled Headers
-*.gch
-*.pch
+struct Patient patients[MAX_PATIENTS];
+int patientCount = 0;
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+// Function to load patient data from a file
+void loadPatientsFromFile() {
+    FILE *file = fopen(FILENAME, "r");
+    if (file != NULL) {
+        while (fscanf(file, "%d,%99[^,],%d,%99[^,],%99[^\n]\n", 
+                       &patients[patientCount].id, patients[patientCount].name,
+                       &patients[patientCount].age, patients[patientCount].disease,
+                       patients[patientCount].doctor) != EOF) {
+            patientCount++;
+        }
+        fclose(file);
+    }
+}
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+// Function to save patient data to a file
+void savePatientsToFile() {
+    FILE *file = fopen(FILENAME, "w");
+    if (file != NULL) {
+        for (int i = 0; i < patientCount; i++) {
+            fprintf(file, "%d,%s,%d,%s,%s\n", patients[i].id, patients[i].name, 
+                    patients[i].age, patients[i].disease, patients[i].doctor);
+        }
+        fclose(file);
+    } else {
+        printf("Error saving patient data.\n");
+    }
+}
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+// Function to add a new patient to the system
+void addPatient(struct Patient newPatient) {
+    if (patientCount < MAX_PATIENTS) {
+        newPatient.id = patientCount + 1;
+        patients[patientCount] = newPatient;
+        patientCount++;
+        savePatientsToFile();
+    } else {
+        printf("Patient limit reached.\n");
+    }
+}
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+int main() {
+    struct Patient newPatient;
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+    // Load existing patient data from file
+    loadPatientsFromFile();
+
+    // Example of adding a new patient
+    strcpy(newPatient.name, "John Doe");
+    newPatient.age = 30;
+    strcpy(newPatient.disease, "Flu");
+    strcpy(newPatient.doctor, "Dr. Smith");
+
+    addPatient(newPatient);
+
+    return 0;
+}
+
+
